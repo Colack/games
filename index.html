@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jack Spencer</title>
+    <link rel="stylesheet" href="colack.github.io/site/frontend/css/index.css">
+    <link rel="icon" href="colack.github.io/site/frontend/img/logo.ico">
+</head>
+<body>
+    <div class="container">
+        <div id="content">Loading...</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="colack.github.io/site/frontend/js/fetchMarkdown.js"></script>
+    <script>
+        window.onload = function() {
+            fetchMarkdown('https://raw.githubusercontent.com/Colack/site/refs/heads/main/frontend/md/games.md');
+        }
+    </script>
+</body>
+</html>
