@@ -1,0 +1,66 @@
+<html><head></head><canvas id = "canvas"></canvas><script>
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+
+canvas.width = 512;
+canvas.height = 480;
+
+
+    ctx.fillStyle = "orange";
+    ctx.beginPath();
+    ctx.rect(0, 0, canvas.width, canvas.height);
+    ctx.fill();
+    ctx.closePath();
+
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+    ctx.rect(canvas.width / 2, 80, 32, 32);
+    ctx.fill();
+    ctx.closePath();
+    ctx.beginPath();
+    ctx.fillStyle = "black";
+    ctx.arc(canvas.width / 2 + 10, 80 + 10, 2, 0, Math.PI * 2, true);
+    ctx.fill();
+    ctx.arc(canvas.width / 2 + 30, 80 + 10, 2, 0, Math.PI * 2, true);
+    ctx.fill();
+    ctx.closePath();
+
+    ctx.fillStyle = "black";
+    ctx.beginPath();
+    ctx.rect(canvas.width / 2 - 40, 80, 32, 32);
+    ctx.stroke();
+    ctx.closePath();
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+    ctx.rect(canvas.width / 2 - 40, 80, 32, 32);
+    ctx.fill();
+    ctx.closePath();
+    ctx.fillStyle = "black";
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2 - 37, 80 + 10, 3, 0, Math.PI, true);
+    ctx.fill();
+    ctx.arc(canvas.width / 2 - 15, 80 + 10, 3, 0, Math.PI, true);
+    ctx.fill();
+    ctx.closePath();
+    ctx.fillStyle = "black";
+    ctx.beginPath();
+    ctx.rect(canvas.width / 2 - 37, 80 - 5, 26, 5);
+    ctx.fill();
+    ctx.closePath();
+    ctx.fillStyle = "black";
+    ctx.beginPath();
+    ctx.rect(canvas.width / 2 - 34, 80 - 30, 20, 25);
+    ctx.fill();
+    ctx.closePath();
+    ctx.fillStyle = "gold";
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2 - 24, 80 - 5, 10, 0, Math.PI, true);
+    ctx.fill();
+    ctx.closePath();
+
+    ctx.fillStyle = "black";
+    ctx.font = "17px Helvetica";
+    ctx.fillText("1/31/2023", 212, 150);
+
+
+</script><body></body></html>

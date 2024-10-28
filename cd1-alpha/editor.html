@@ -1,0 +1,213 @@
+<html><head></head><canvas id = "canvas"></canvas ><script>
+// This is a side project that is a level editor for cubedood.
+// Uses parts of the index.html file.
+
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+canvas.width = 512;
+canvas.height = 480;
+
+var gameName = "CubeDood";
+
+var currentHeldObject = 0;
+
+var currentGridPosition = [0, 0];
+
+var mouseX = 0;
+var mouseY = 0;
+
+var screenShown = false;
+
+var currentLevel = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+];
+
+var keys = [];
+
+// event listener for the keyboard
+document.addEventListener("keydown", function(event) {
+    keys[event.keyCode] = true;
+});
+
+document.addEventListener("keyup", function(event) {
+    keys[event.keyCode] = false;
+});
+
+// event listener for the mouse
+canvas.addEventListener("mousedown", function(event) {
+    // get the mouse position
+    mouseX = event.clientX - canvas.offsetLeft;
+    mouseY = event.clientY - canvas.offsetTop;
+});
+
+function update() {
+    // Make a orange background
+
+    // The game will be controlled in a grid system.
+    // You can change the current object by pressing 0-4
+
+    // 0 = empty
+    // 1 = wall
+    // 2 = flag
+    // 3 = coin
+    // 4 = lava
+
+    // If you press 0-4, you can change the current object
+    if (keys[48]) {
+        currentHeldObject = 0;
+    }
+    if (keys[49]) {
+        currentHeldObject = 1;
+    }
+    if (keys[50]) {
+        currentHeldObject = 2;
+    }
+    if (keys[51]) {
+        currentHeldObject = 3;
+    }
+    if (keys[52]) {
+        currentHeldObject = 4;
+    }
+    
+    // Make the grid position the closest to the mouse, but still in the grid, not in the corner of the mouse, but in the middle of the mouse
+    currentGridPosition[0] = Math.floor(mouseX / 32);
+    currentGridPosition[1] = Math.floor(mouseY / 32);
+
+    // If z is pressed, you can place the current object
+    if (keys[90]) {
+        currentLevel[currentGridPosition[1]][currentGridPosition[0]] = currentHeldObject;
+        console.log("click");
+    }
+    // if x is pressed, you can remove the current object
+    if (keys[88]) {
+        currentLevel[currentGridPosition[1]][currentGridPosition[0]] = 0;
+    }
+
+    // If you press s, you can save the level
+    if (keys[83]) {
+        var levelString = "";
+        for (var i = 0; i < currentLevel.length; i++) {
+            for (var j = 0; j < currentLevel[i].length; j++) {
+                levelString += currentLevel[i][j] + ",";
+            }
+        }
+        // Make a alert that includes the level string
+        // Only show the screen once, not every frame
+        if (!screenShown) {
+            // Make it so the alert lets you copy the level
+            var name = prompt("Enter level name", "Level name here");
+            var name2 = prompt("Enter level creator", "Level creator here");
+
+            if (levelString[levelString.length - 1] == ",") {
+                levelString = levelString.substring(0, levelString.length - 1);
+            }
+
+            levelString = '"' + name + "," + name2 + "," + levelString + '"';
+
+            prompt("Here is your level: ", levelString);
+
+            screenShown = true;
+            // Then set keys[83] to false, so you can't save the level again
+            keys[83] = false;
+            setTimeout(function() {
+                screenShown = false;
+            }, 1000);
+        }
+    }
+
+    // If you press r, you can reset the level
+    // But make a alert to make sure you want to reset the level
+    if (keys[82]) {
+        currentLevel = [
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            ];
+    }
+
+    ctx.fillStyle = "orange";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw the level, and each cube is 32x32
+    for (var i = 0; i < currentLevel.length; i++) {
+        for (var j = 0; j < currentLevel[i].length; j++) {
+            if (currentLevel[i][j] == 0) {
+                ctx.fillStyle = "orange";
+            } else if (currentLevel[i][j] == 1) {
+                ctx.fillStyle = "black";
+            } else if (currentLevel[i][j] == 2) {
+                ctx.fillStyle = "green";
+            } else if (currentLevel[i][j] == 3) {
+                ctx.fillStyle = "yellow";
+            } else if (currentLevel[i][j] == 4) {
+                ctx.fillStyle = "red";
+            }
+            ctx.fillRect(j * 32, i * 32, 32, 32);
+        }
+    }
+
+    // Draw the current grid position, and the current object
+    ctx.fillStyle = "white";
+    ctx.fillRect(currentGridPosition[0] * 32, currentGridPosition[1] * 32, 32, 32);
+    if (currentHeldObject == 0) {
+        ctx.fillStyle = "orange";
+    } else if (currentHeldObject == 1) {
+        ctx.fillStyle = "black";
+    } else if (currentHeldObject == 2) {
+        ctx.fillStyle = "green";
+    } else if (currentHeldObject == 3) {
+        ctx.fillStyle = "yellow";
+    } else if (currentHeldObject == 4) {
+        ctx.fillStyle = "red";
+    }
+
+
+
+    requestAnimationFrame(update);        
+}
+
+function confirm(message) {
+    var canvas = document.getElementById("canvas");
+    var ctx = canvas.getContext("2d");
+    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "white";
+    ctx.font = "30px Arial";
+    ctx.fillText(message, 10, 50);
+    ctx.fillText("Press Y to confirm", 10, 100);
+    ctx.fillText("Press N to cancel", 10, 150);
+    if (keys[89]) {
+        return true;
+    } else if (keys[78]) {
+        return false;
+    }
+}
+
+update();
+</script><body></body></html>

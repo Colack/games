@@ -1,0 +1,493 @@
+<html><head></head><canvas id = "canvas"></canvas ><script>
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+canvas.width = 512;
+canvas.height = 480;
+
+var gameName = "CubeDood";
+
+var player = {
+    x: 256,
+    y: 256,
+    width: 32,
+    height: 32,
+    speed: 3,
+    velX: 0,
+    velY: 0,
+    jumping: false,
+    grounded: false,
+    score: 0
+};
+
+var currentLevel = 1;
+
+var jumpingHeight = 3.3;
+
+var keys = [];
+
+var gravity = 0.2;
+var friction = 0.92;
+
+var levelTextShowing = false;
+
+var directionFacing = "right";
+
+var gameStarted = false;
+
+var speedrunMode = false;
+var speedrunTime = 0;
+
+var soundEffectPlaying = false;
+
+var sfx = {
+    jump: "assets/sounds/jump.mp3",
+    win: "assets/sounds/bell.mp3"
+}
+
+var sound = {
+    rush: "assets/music/rush.mp3",
+    editor: "assets/music/editor.mp3"
+}
+
+var sprites = {
+    goal: "assets/sprites/goal.png",
+}
+
+var level = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+];
+
+var currentLevelName = "";
+var currentLevelAuthor = "";
+
+var levels = [
+    "Basics,CubeDood,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3,3,0,0,0,0,0,0,0,0,1,1,0,0,0",
+    "Red-Guys,CubeDood,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+    "Big-Jump,CubeDood,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,4,4,4,4,4,4,0,0,0,0,4,4,4,4,4,4",
+    "Double-Trouble,Document,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,4,4,4,4,4,0,0,1,1,0,0,4,4,4,4,4,4,4,4,4,4,0,0,1,1,0,0,4,4,4,4,4,4,4,4,4,4,1,0,0,0,0,1,4,4,4,4,4,4,4,4,4,4,1,1,0,0,1,1,4,4,4,4,4,4,4,4,4,4,0,0,0,0,0,0,4,4,4,4,4,4,4,4,4,4,0,0,0,0,0,0,4,4,4,4,4",
+    "To-The-Top,Mani,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,4,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,3,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,4,0,0,1,0,0,0,0,0,0,0,3,0,0,1,1,1,1,1,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+    "Ohio,odd,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+    "Amazing-Maze,CubeDood,1,0,0,0,1,1,0,1,1,1,1,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,1,0,1,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,1,2,0,1,1,1,1,1,0,1,0,1,1,1,0,1,1,1,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,1,1,1,0,1,1,1,1,1,1,1,0,1,1,1,0,1,0,1,0,0,0,0,1,0,0,1,0,0,0,0,0,1,0,1,1,0,1,1,1,0,1,1,1,1,0,1,0,1,0,0,0,0,0,0,1,0,0,0,0,1,0,1,0,1,1,1,1,0,1,0,1,1,1,0,1,1,1,1,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,1,0,1,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,1,0,0,1,1,1,1,1,0,1,0,1,1,0,1,0,1,0",
+    "Clouds,CubeDood,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0"
+];
+
+window.addEventListener("keydown", function(event) {
+    keys[event.keyCode] = true;
+});
+window.addEventListener("keyup", function(event) {
+    keys[event.keyCode] = false;
+});
+canvas.addEventListener("mousedown", function(event) {
+    var mouseX = event.pageX - canvas.offsetLeft;
+    var mouseY = event.pageY - canvas.offsetTop;
+
+    if (!gameStarted) {
+        if (mouseX > 175 && mouseX < 325 && mouseY > 300 && mouseY < 350) {
+            startGame();
+            gameStarted = true;
+        }
+
+        // Check if the mouse is over the 'editor' button
+        if (mouseX > 175 && mouseX < 325 && mouseY > 336 && mouseY < 400) {
+            // Send the user to a link called "https://colack.me/editor.html"
+            window.location.href = "https://colack.me/editor.html";
+        }
+
+            // Check if the mouse is over the 'CubeDood' button
+        if (mouseX > 175 && mouseX < 325 && mouseY > 400 && mouseY < 450) {
+            // Send the user to a link called "https://colack.me/cubedood.html"
+            window.location.href = "https://colack.me/player.html";
+        }
+    }
+});
+
+function update() {
+    if (keys[38] || keys[32]) {
+        if (!player.jumping && player.grounded) {
+            player.jumping = true;
+            player.grounded = false;
+            player.velY = -jumpingHeight * 2;
+            var jumpSound = new Audio(sfx.jump);
+            if (directionFacing == "right") {
+                directionFacing = "upr";
+            } else if (directionFacing == "left") {
+                directionFacing = "upl";
+            }
+            if (!soundEffectPlaying) {
+                jumpSound.play();
+                soundEffectPlaying = true;
+                setTimeout(function() {
+                    soundEffectPlaying = false;
+                }, 250);
+            }
+        }
+    }
+    if (keys[39]) {
+        if (player.velX < player.speed) {
+            player.velX++;
+            if (!player.jumping) {
+                directionFacing = "right";
+            } else {
+                directionFacing = "upr";
+            }
+        }
+    }
+    if (keys[37]) {
+        if (player.velX > -player.speed) {
+            player.velX--;
+            if (!player.jumping) {
+                directionFacing = "left";
+            } else {
+                directionFacing = "upl";
+            }
+        }
+    }
+    if (keys[16]) {
+        player.speed = 5;
+    } else if (keys[17]) {
+        player.speed = 1;
+    } else {
+        player.speed = 3;
+    }
+
+    if (keys[82]) {
+        resetLevel();
+    }
+
+    if (player.y < canvas.height - player.height) {
+        player.jumping = true;
+    }
+
+    player.velX *= friction;
+
+    player.velY += gravity;
+
+    player.x += player.velX;
+    player.y += player.velY;
+
+    if (player.x >= canvas.width - player.width) {
+        player.x = canvas.width - player.width;
+    } else if (player.x <= 0) {
+        player.x = 0;
+    }
+
+    if (player.y >= canvas.height - player.height) {
+        player.y = canvas.height - player.height;
+        player.grounded = true;
+        player.jumping = false;
+        if (directionFacing == "upr") {
+            directionFacing = "right";
+        } else if (directionFacing == "upl") {
+            directionFacing = "left";
+        }
+    }
+    if (player.y <= 0) {
+        player.y = 1;
+    }
+
+    ctx.fillStyle = "orange";
+    ctx.beginPath();
+    ctx.rect(0, 0, canvas.width, canvas.height);
+    ctx.fill();
+    ctx.closePath();
+
+    // Draw the level
+    for (var y = 0; y < level.length; y++) {
+        for (var x = 0; x < level[y].length; x++) {
+            if (level[y][x] === 1) {
+                ctx.fillStyle = "black";
+                ctx.beginPath();
+                ctx.rect(x * 32, y * 32, 32, 32);
+                ctx.fill();
+                ctx.closePath();
+            } else if (level[y][x] === 2) {
+                var goalFlag = new Image();
+                goalFlag.src = sprites.goal;
+                ctx.drawImage(goalFlag, x * 32, y * 32, 32, 32);
+            } else if (level[y][x] === 3) {
+                ctx.fillStyle = "yellow";
+                ctx.beginPath();
+                ctx.rect(x * 32, y * 32, 32, 32);
+                ctx.fill();
+                ctx.closePath();
+            } else if (level[y][x] === 4) {
+                ctx.fillStyle = "red";
+                ctx.beginPath();
+                ctx.rect(x * 32, y * 32, 32, 32);
+                ctx.fill();
+                ctx.closePath();
+            }
+        }
+    }
+    
+    eyeColor = "black";
+    bodyColor = "white";
+    ctx.fillStyle = bodyColor;
+    ctx.beginPath();
+    ctx.rect(player.x, player.y, player.width, player.height);
+    ctx.fill();
+    ctx.closePath();
+    if (directionFacing == "right") {
+        ctx.beginPath();
+        ctx.fillStyle = eyeColor;
+        ctx.arc(player.x + 10, player.y + 10, 2, 0, Math.PI * 2, true);
+        ctx.fill();
+        ctx.arc(player.x + 30, player.y + 10, 2, 0, Math.PI * 2, true);
+    } else if (directionFacing == "left") {
+        ctx.beginPath();
+        ctx.fillStyle = eyeColor;
+        ctx.arc(player.x + 3, player.y + 10, 2, 0, Math.PI * 2, true);
+        ctx.fill();
+        ctx.arc(player.x + 25, player.y + 10, 2, 0, Math.PI * 2, true);
+    } else if (directionFacing == "upl") {
+        ctx.beginPath();
+        ctx.fillStyle = eyeColor;
+        ctx.arc(player.x + 3, player.y + 3, 2, 0, Math.PI * 2, true);
+        ctx.fill();
+        ctx.arc(player.x + 25, player.y + 3, 2, 0, Math.PI * 2, true);
+    } else if (directionFacing == "upr") {
+        ctx.beginPath();
+        ctx.fillStyle = eyeColor;
+        ctx.arc(player.x + 10, player.y + 3, 2, 0, Math.PI * 2, true);
+        ctx.fill();
+        ctx.arc(player.x + 30, player.y + 3, 2, 0, Math.PI * 2, true);
+    }
+    ctx.fill();
+    ctx.closePath();
+
+    ctx.font = "32px Arial";
+    ctx.fillStyle = "white";
+    ctx.fillText("Level " + currentLevel, 5, 35);
+
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "white";
+    ctx.fillText(currentLevelName, 5, 55);
+
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "white";
+    ctx.fillText("By: " + currentLevelAuthor, 5, 75);
+
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "white";
+    ctx.fillText("Score: " + player.score, 400, 30);
+
+    if (speedrunMode) {
+        speedrunTime += 0.16;
+        ctx.font = "16px Arial";
+        ctx.fillStyle = "white";
+        ctx.fillText("Time: " + speedrunTime, 5, 50);
+    }
+
+    switch (currentLevel) {
+        case 1:
+            ctx.font = "16px Arial";
+            ctx.fillStyle = "white";
+            ctx.fillText("This is you", 200, 440);
+
+            ctx.font = "16px Arial";
+            ctx.fillStyle = "white";
+            ctx.fillText("This is your goal", 5, 250);
+            break;
+        case 2:
+            ctx.font = "16px Arial";
+            ctx.fillStyle = "white";
+            ctx.fillText("The red guys are bad", 50, 250);
+            break;
+    }
+
+    for (var y = 0; y < level.length; y++) {
+        for (var x = 0; x < level[y].length; x++) {
+            if (level[y][x] === 1) {
+                var tile = {
+                    x: x * 32,
+                    y: y * 32,
+                    width: 32,
+                    height: 32
+                };
+
+                if (player.x < tile.x + tile.width &&
+                    player.x + player.width > tile.x &&
+                    player.y < tile.y + tile.height &&
+                    player.y + player.height > tile.y) {
+                    var side = collisionSide(player, tile);
+                    if (side === "bottom") {
+                        player.y = tile.y + tile.height;
+                        player.velY = 0;
+
+                    } else if (side === "top") {
+                        player.grounded = true;
+                        player.jumping = false;
+                        player.y = tile.y - player.height;
+                        player.velY = 0;
+                        if (directionFacing == "upr") {
+                            directionFacing = "right";
+                        } else if (directionFacing == "upl") {
+                            directionFacing = "left";
+                        }
+
+                    } else if (side === "left") {
+                        player.x = tile.x + tile.width;
+                    } else if (side === "right") {
+                        player.x = tile.x - player.width;
+                    }
+                }
+            } else if (level[y][x] === 2) {
+                var tile = {
+                    x: x * 32,
+                    y: y * 32,
+                    width: 32,
+                    height: 32
+                };
+
+                if (player.x < tile.x + tile.width &&
+                    player.x + player.width > tile.x &&
+                    player.y < tile.y + tile.height &&
+                    player.y + player.height > tile.y) {
+                    var winAudio = new Audio(sfx.win);
+                    winAudio.play();
+                    currentLevel++;
+                    loadLevel();
+                }
+            } else if (level[y][x] === 3) {
+                var tile = {
+                    x: x * 32,
+                    y: y * 32,
+                    width: 32,
+                    height: 32
+                };
+
+                if (player.x < tile.x + tile.width &&
+                    player.x + player.width > tile.x &&
+                    player.y < tile.y + tile.height &&
+                    player.y + player.height > tile.y) {
+                    level[y][x] = 0;
+                    player.score += 100;
+                }
+            } else if (level[y][x] === 4) {
+                var tile = {
+                    x: x * 32,
+                    y: y * 32,
+                    width: 32,
+                    height: 32
+                };
+
+                if (player.x < tile.x + tile.width &&
+                    player.x + player.width > tile.x &&
+                    player.y < tile.y + tile.height &&
+                    player.y + player.height > tile.y) {
+                    resetLevel();
+                }
+            }
+        }
+    }
+
+    requestAnimationFrame(update);
+}
+
+function resetLevel() {
+    player.x = 230;
+    player.y = 480;
+    player.width = 32;
+    player.height = 32;
+    player.velX = 0;
+    player.velY = 0;
+    player.jumping = false;
+    player.grounded = false;
+}
+
+function startGame() {
+    var audio = new Audio(sound.rush);
+    audio.play();
+    audio.loop = true;
+    resetLevel();
+    loadLevel();
+    update();
+}
+
+function loadLevel() {
+    loadLevels(levels[currentLevel - 1]);
+    resetLevel();
+}
+
+function collisionSide(player, tile) {
+    var playerCenterX = player.x + player.width / 2;
+    var playerCenterY = player.y + player.height / 2;
+    var tileCenterX = tile.x + tile.width / 2;
+    var tileCenterY = tile.y + tile.height / 2;
+
+    var deltaX = playerCenterX - tileCenterX;
+    var deltaY = playerCenterY - tileCenterY;
+
+    var angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+
+    if (angle < 45 && angle > -45) {
+        return "left";
+    } else if (angle < 135 && angle > 45) {
+        return "bottom";
+    } else if (angle < -45 && angle > -135) {
+        return "top";
+    } else {
+        return "right";
+    }
+}
+
+function titleScreen() {
+    ctx.fillStyle = "orange";
+    ctx.fillRect(0, 0, 500, 500);
+
+    ctx.font = "30px Arial";
+    ctx.fillStyle = "black";
+    ctx.fillText(gameName, 153, 200);
+
+    ctx.font = "20px Arial";
+    ctx.fillStyle = "black";
+    ctx.fillText("Start Game", 175, 335);
+
+    // Another button that says "Editor"
+    ctx.font = "20px Arial";
+        ctx.fillStyle = "black";
+        ctx.fillText("Editor", 175, 375);
+
+        // Another button that says "CubeDood"
+        ctx.font = "20px Arial";
+        ctx.fillStyle = "black";
+        ctx.fillText("CubeDood Player", 175, 415);
+}
+
+function loadLevels(levelData) {
+    levelData = levelData.replace(/,/g, " ");
+
+    currentLevelName = levelData.substring(0, levelData.indexOf(" "));
+    currentLevelAuthor = levelData.substring(levelData.indexOf(" ") + 1, levelData.indexOf(" ", levelData.indexOf(" ") + 1));
+
+    levelData = levelData.substring(levelData.indexOf(" ", levelData.indexOf(" ") + 1) + 1);
+
+    var levelDataArray = levelData.split(" ");
+    var levelDataArrayIndex = 0;
+    for (var y = 0; y < level.length; y++) {
+        for (var x = 0; x < level[y].length; x++) {
+            level[y][x] = Number(levelDataArray[levelDataArrayIndex]);
+            if (isNaN(level[y][x])) {
+                level[y][x] = 0;
+            }
+            levelDataArrayIndex++;
+        }
+    }
+}
+
+titleScreen(); 
+</script><body></body></html>
